@@ -125,5 +125,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # GraphQL settings
 GRAPHENE = {
-    'SCHEMA': 'schema.schema',  # Path to your GraphQL schema
+    'SCHEMA': 'crm.schema.schema',  # Path to your GraphQL schema
 }
