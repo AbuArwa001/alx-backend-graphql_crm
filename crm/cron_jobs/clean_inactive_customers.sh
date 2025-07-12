@@ -7,6 +7,10 @@ TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
 
 # Get script directory (satisfies requirement to use ${BASH_SOURCE[0]})
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ cwd != "$SCRIPT_DIR" ]; then
+    echo "Error: Script must be run from its own directory."
+    exit 1
+fi
 cd "$SCRIPT_DIR/../../"  # Move to project root from crm/cron_jobs/
 
 # Activate virtual environment if needed
