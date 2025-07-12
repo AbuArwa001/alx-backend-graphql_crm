@@ -5,11 +5,15 @@ PROJECT_DIR="/home/khalfan/Projects/alx-backend-graphql_crm"
 LOG_FILE="/tmp/customer_cleanup_log.txt"
 TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
 
+# Get script directory (satisfies requirement to use ${BASH_SOURCE[0]})
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/../../"  # Move to project root from crm/cron_jobs/
+
 # Activate virtual environment if needed
 # source /path/to/venv/bin/activate
 
-# Navigate to project directory
-cd "$PROJECT_DIR"
+# # Navigate to project directory
+# cd "$PROJECT_DIR"
 
 # Run Django shell command to delete inactive customers
 DELETED_COUNT=$(python3 manage.py shell -c "
@@ -32,6 +36,11 @@ count = qs.count()
 qs.delete()
 print(count)
 ")
-
+# Log result
+if [ "$DELETED_COUNT" -ge 0 ]; then
+    echo "[$TIMESTAMP] Deleted customers: $DELETED_COUNT" >> "$LOG_FILE"
+else
+    echo "[$TIMESTAMP] No customers deleted." >> "$LOG_FILE"
+fi
 # Log output with timestamp
-echo \"[$TIMESTAMP] Deleted customers: $DELETED_COUNT\" >> "$LOG_FILE"
+# echo \"[$TIMESTAMP] Deleted customers: $DELETED_COUNT\" >> "$LOG_FILE"
