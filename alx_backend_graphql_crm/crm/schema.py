@@ -7,7 +7,7 @@ class ProductType(DjangoObjectType):
     class Meta:
         model = Product
 
-class UpdateLowStockProducts(graphene.Mutation):
+class UpdateLowStockProductsMutation(graphene.Mutation):
     class Arguments:
         pass  
 
@@ -23,13 +23,13 @@ class UpdateLowStockProducts(graphene.Mutation):
             product.save()
             updated_products.append(product)
 
-        return UpdateLowStockProducts(
+        return UpdateLowStockProductsMutation(
             updated_products=updated_products,
             message=f"{len(updated_products)} products updated at {datetime.now()}"
         )
 
 class Mutation(graphene.ObjectType):
-    update_low_stock_products = UpdateLowStockProducts.Field()
+    update_low_stock_products = UpdateLowStockProductsMutation.Field()
 schema = graphene.Schema(mutation=Mutation)
 
 # class Query(graphene.ObjectType):
