@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'graphene_django', 
     'crm',
+    'django_crontab',  # For cron jobs
 ]
 
 MIDDLEWARE = [
@@ -127,3 +128,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 GRAPHENE = {
     'SCHEMA': 'crm.schema.schema',  # Path to your GraphQL schema
 }
+CRONJOBS = [
+    ('*/5 * * * *', 'crm.cron.log_crm_heartbeat'),
+   ('0 8 * * *', 'crm.cron.send_order_reminders'),
+]
