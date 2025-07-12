@@ -161,3 +161,36 @@ class OrderItem(models.Model):
     @property
     def is_new_item(self):
         return self.created_at >= timezone.now() - timedelta(days=7) if self.created_at else False
+
+class Product(models.Model):
+    name = models.CharField(max_length=100, verbose_name=_("Product Name"))
+    description = models.TextField(blank=True, null=True, verbose_name=_("Description"))
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Price"))
+    stock = models.PositiveIntegerField(default=0, verbose_name=_("Stock"))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Created At"))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=_("Updated At"))
+
+    class Meta:
+        verbose_name = _("Product")
+        verbose_name_plural = _("Products")
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+    def save(self, *args, **kwargs):
+        if self.price < 0:
+            raise ValueError(_("Price cannot be negative."))
+        super().save(*args, **kwargs)
+    def delete(self, *args, **kwargs):
+        if self.stock > 0:
+            raise ValueError(_("Cannot delete product with stock available."))
+        super().delete(*args, **kwargs)
+    @property
+    def is_in_stock(self):
+        return self.stock > 0
+    @property
+    def is_out_of_stock(self):
+        return self.stock == 0
+    @property
+    def is_low_stock(self):
+        return self.stock < 10
