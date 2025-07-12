@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Define variables
+PROJECT_DIR="/home/khalfan/Projects/alx-backend-graphql_crm"
+LOG_FILE="/tmp/customer_cleanup_log.txt"
+TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+
+# Activate virtual environment if needed
+# source /path/to/venv/bin/activate
+
+# Navigate to project directory
+cd "$PROJECT_DIR"
+
+# Run Django shell command to delete inactive customers
+DELETED_COUNT=$(python3 manage.py shell -c "
+from datetime import timedelta
+from django.utils import timezone
+from crm.models import Customer, Order
+from django.db.models import OuterRef, Subquery, DateTimeField
+one_year_ago = timezone.now() - timedelta(days=365)
+# Subquery to get the last order date
+last_order_subquery = Order.objects.filter(
+    customer=OuterRef('pk')
+).order_by('-created_at').values('created_at')[:1]
+qs = Customer.objects.annotate(
+    last_order_date=Subquery(last_order_subquery, output_field=DateTimeField())
+).filter(
+    last_order_date__lt=one_year_ago
+)
+# qs = Customer.objects.filter(last_order_date__lt=one_year_ago)
+count = qs.count()
+qs.delete()
+print(count)
+")
+
+# Log output with timestamp
+echo \"[$TIMESTAMP] Deleted customers: $DELETED_COUNT\" >> "$LOG_FILE"
