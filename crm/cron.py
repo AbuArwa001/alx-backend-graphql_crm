@@ -37,30 +37,41 @@ def log_crm_heartbeat():
 
 
 def update_low_stock():
-    graphql_url = 'http://127.0.0.1:8000/graphql/'
-    mutation = '''
+    url = "http://localhost:8000/graphql/"
+    query = '''
     mutation {
         updateLowStockProducts {
+            message
             updatedProducts {
                 id
                 name
                 stock
             }
-            message
         }
     }
     '''
-    transport = RequestsHTTPTransport(
-        url=graphql_url,
-        verify=False,
-        retries=3,
-    )
-    client = Client(transport=transport, fetch_schema_from_transport=True)
+
     try:
-        response = client.execute(gql(mutation))
-        print("Low stock products updated successfully:", response)
+        # response = requests.post(url, json={'query': query})
+        transport = RequestsHTTPTransport(
+            url=url,
+            use_json=True,
+            verify=False,
+            retries=3,
+        )
+        client = Client(transport=transport, fetch_schema_from_transport=True)
+        response = client.execute(gql(query))
+        data = response
+        if "errors" in data:
+            log_msg = f"{datetime.now()} - GraphQL Error: {data['errors']}\n"
+        else:
+            result = data['data']['updateLowStockProducts']
+            log_msg = f"{datetime.now()} - {result['message']}\n"
+            for p in result['updatedProducts']:
+                log_msg += f" - {p['name']} updated to stock: {p['stock']}\n"
+
     except Exception as e:
-        print(f"Error updating low stock products: {e}")
-        sys.exit(1)
-        raise ValueError(_("Price cannot be negative."))
-    return product
+        log_msg = f"{datetime.now()} - Exception occurred: {e}\n"
+
+    with open("/tmp/low_stock_updates_log.txt", "a") as log_file:
+        log_file.write(log_msg)
